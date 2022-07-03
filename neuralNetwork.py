@@ -10,40 +10,40 @@ def sigmoidD(x):
 
 class NeuralNetwork:
     learningRate = 0.1
-    weightsIH = []
-    weightsHO = []
-    biasIH = []
-    biasHO = []
     
     weights = []
     bias = []
+    shape = []
 
-    def __init__(self, input, hidden, output):
-        self.initWeights(input, hidden, output)
-        self.initBias(input, hidden, output)
+    def __init__(self, input):
+        self.initWeights(input)
+        self.initBias(input)
+        self.shape = input
 
     #receives and returns in list form [-,-,-]
     def guess(self, input):
         inputMatrix = np.matrix(input)
         inputMatrix = np.transpose(inputMatrix)
+        outputMatrix = np.matrix([])
         
-        #inputMatrix = 1 / (1 + np.exp(-inputMatrix))
-        
-        hiddenMatrix = np.matmul(np.transpose(self.weightsIH), inputMatrix)
-        hiddenMatrix = np.add(hiddenMatrix, self.biasIH)
-        
-        hiddenMatrix = 1 / (1 + np.exp(-hiddenMatrix))
+        it = 0
+        for k in self.weights:
+            
+            outputMatrix = np.matmul(np.transpose(k), inputMatrix)
+            outputMatrix = np.add(outputMatrix, self.bias[it])
+            outputMatrix = sigmoid(outputMatrix)
 
-        outputMatrix = np.matmul(np.transpose(self.weightsHO), hiddenMatrix)
-        outputMatrix = np.add(outputMatrix, self.biasHO)
-        
-        outputMatrix = 1 / (1 + np.exp(-outputMatrix))
+            inputMatrix = outputMatrix
+            it += 1
         
         return outputMatrix.tolist()
 
     def train(self, inputSet, outputSet):
         j = 0
         for i in inputSet:
+            outputList = []
+            errorList = []
+
             ################################################
             outputTarget = np.matrix(outputSet[j])
             outputTarget = np.transpose(outputTarget)
@@ -51,76 +51,60 @@ class NeuralNetwork:
             inputMatrix = np.matrix(i)
             inputMatrix = np.transpose(inputMatrix)
             
-            #inputMatrix = 1 / (1 + np.exp(-inputMatrix))
             
-            hiddenMatrix = np.matmul(np.transpose(self.weightsIH), inputMatrix)
-            hiddenMatrix = np.add(hiddenMatrix, self.biasIH)
-            
-            hiddenMatrix = 1 / (1 + np.exp(-hiddenMatrix))
-
-            outputMatrix = np.matmul(np.transpose(self.weightsHO), hiddenMatrix)
-            outputMatrix = np.add(outputMatrix, self.biasHO)
-            
-            outputMatrix = 1 / (1 + np.exp(-outputMatrix))
-            
+            outputList.append(inputMatrix)
+            tempMatrix = inputMatrix
+            it = 0
+            for k in self.weights:
+                outputMatrix = np.matmul(np.transpose(k), tempMatrix)
+                outputMatrix = np.add(outputMatrix, self.bias[it])
+                outputMatrix = sigmoid(outputMatrix)
+                
+                outputList.append(outputMatrix)
+                
+                
+                tempMatrix = outputMatrix
+                it += 1
             
             ##### linear algebra
             
-            errorO = np.subtract(outputMatrix, outputTarget)
+            #if(random.randrange(1,1000) == 999):
+                #print(outputTarget, outputMatrix)
             
-            if(random.randrange(1,1000) == 999):
-                print(outputTarget, outputMatrix, errorO)
             
-            errorH = np.matmul(self.weightsHO, errorO)
+            errorList.append(np.subtract(outputMatrix, outputTarget))
             
-            #errorI = np.matmul(self.weightsIH, errorH)
-            
-            outputGradient = sigmoidD(outputMatrix)
-            self.weightsHO = np.subtract(self.weightsHO, np.matmul(hiddenMatrix, np.transpose(self.learningRate * np.multiply(errorO, outputGradient))))
-
-            hiddenGradient = sigmoidD(hiddenMatrix)
-            self.weightsIH = np.subtract(self.weightsIH, np.matmul(inputMatrix, np.transpose(self.learningRate * np.multiply(errorH, hiddenGradient))))
-            
-            #self.weightsHO = 1 / (1 + np.exp(-self.weightsHO))
-            #self.weightsIH = 1 / (1 + np.exp(-self.weightsIH))
-
-            self.biasHO = np.subtract(self.biasHO, np.multiply(errorO, outputGradient) * self.learningRate)
-            self.biasIH = np.subtract(self.biasIH, np.multiply(errorH, hiddenGradient) * self.learningRate)
-            
-            self.biasHO = 1 / (1 + np.exp(-self.biasHO))
-            self.biasIH = 1 / (1 + np.exp(-self.biasIH))
-            
-            ######
+            it = 0
+            for w in self.weights:
+                errorList.append(np.matmul(self.weights[len(self.weights) - 1 - it], errorList[it]))
+                it += 1
+            errorList.pop()
+            it = 0
+            for w in self.weights:
+                outputGradient = sigmoidD(outputList[it + 1])
+                self.weights[it] = np.subtract(self.weights[it], np.matmul(outputList[it], np.transpose(self.learningRate * np.multiply(errorList[len(errorList) - 1 -it], outputGradient)))) ##wtf
+                #self.weights[it] = sigmoid(self.weights[it])
+                
+                self.bias[it] = np.subtract(self.bias[it], np.multiply(errorList[len(errorList) - 1 - it], outputGradient) * self.learningRate)
+                self.bias[it] = sigmoid(self.bias[it])
+                it += 1
             j += 1
             
-    def initWeights(self, input, hidden, output):
-        temp = []
-        for i in range(input):
-            temp2 = []
-            for j in range(hidden):
-                temp2.append(random.uniform(-1,1))
-            temp.append(temp2)
-        self.weightsIH = np.matrix(temp)
-        
-        #############################################
-        
-        temp = []
-        for i in range(hidden):
-            temp2 = []
-            for j in range(output):
-                temp2.append(random.uniform(-1,1))
-            temp.append(temp2)
-        self.weightsHO = np.matrix(temp)
+    def initWeights(self, input):
+        for k in range(len(input) - 1):
+            temp = []
+            for i in range(input[k]):
+                temp2 = []
+                for j in range(input[k+1]):
+                    temp2.append(random.uniform(-1,1))
+                temp.append(temp2)
+            self.weights.append(np.matrix(temp))
 
-    def initBias(self, input, hidden, output):
-        temp = []
-        for i in range(hidden):
-            temp.append(random.uniform(-1,1))
-        self.biasIH = np.transpose(np.matrix(temp))
-        
-        temp = []
-        for i in range(output):
-            temp.append(random.uniform(-1,1))
-        self.biasHO = np.transpose(np.matrix(temp))
+    def initBias(self, input):
+        for k in range(len(input) - 1):
+            temp = []
+            for i in range(input[k+1]):
+                temp.append(random.uniform(-1,1))
+            self.bias.append(np.transpose(np.matrix(temp)))
 
     
