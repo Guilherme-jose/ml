@@ -7,13 +7,13 @@ def by255(x):
     return x/255
         
 print("initializing weights")
-nn = nn.NeuralNetwork([5250, 5000, 3000, 1000, 200,2])
+nn = nn.NeuralNetwork([5250, 100, 100, 2])
 
 trainingSet = []
 trainingOutput = []
 
 print("training")
-for i in range(1000):
+for i in range(100000):
     if(randrange(0,2) == 0):
         image = Image.open('training_set_small/cats/cat.' + str(randrange(1,4001)) + '.jpg')
         data = np.asarray(image)

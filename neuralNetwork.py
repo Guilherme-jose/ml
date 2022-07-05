@@ -7,10 +7,22 @@ def sigmoid(x):
     return 1 / (1 + np.exp(-x))
     
 def sigmoidD(x):
-    return np.multiply(sigmoid(x), sigmoid(1 - x))
+    return np.multiply(sigmoid(x), 1 - sigmoid(x))
+    
+def tanh(x):
+    return np.tanh(x)
 
+def tanhD(x):
+    return (1.0 - np.multiply(np.tanh(x), np.tanh(x)))
+
+def activation(x):
+    return tanh(x)
+
+def activationD(x):
+    return tanhD(x)
+    
 class NeuralNetwork:
-    learningRate = 0.1
+    learningRate = 0.2
     
     weights = []
     bias = []
@@ -32,11 +44,10 @@ class NeuralNetwork:
             
             outputMatrix = np.matmul(np.transpose(k), inputMatrix)
             outputMatrix = np.add(outputMatrix, self.bias[it])
-            outputMatrix = sigmoid(outputMatrix)
+            outputMatrix = activation(outputMatrix)
 
             inputMatrix = outputMatrix
             it += 1
-        
         return outputMatrix.tolist()
 
     def train(self, inputSet, outputSet):
@@ -59,7 +70,7 @@ class NeuralNetwork:
             for k in self.weights:
                 outputMatrix = np.matmul(np.transpose(k), tempMatrix)
                 outputMatrix = np.add(outputMatrix, self.bias[it])
-                outputMatrix = sigmoid(outputMatrix)
+                outputMatrix = activation(outputMatrix)
                 
                 outputList.append(outputMatrix)
                 
@@ -82,12 +93,11 @@ class NeuralNetwork:
             errorList.pop()
             it = 0
             for w in self.weights:
-                outputGradient = sigmoidD(outputList[it + 1])
+                outputGradient = activationD(outputList[it + 1])
                 self.weights[it] = np.subtract(self.weights[it], np.matmul(outputList[it], np.transpose(self.learningRate * np.multiply(errorList[len(errorList) - 1 -it], outputGradient)))) ##wtf
-                #self.weights[it] = sigmoid(self.weights[it])
                 
                 self.bias[it] = np.subtract(self.bias[it], np.multiply(errorList[len(errorList) - 1 - it], outputGradient) * self.learningRate)
-                self.bias[it] = sigmoid(self.bias[it])
+                #self.bias[it] = activation(self.bias[it])
                 it += 1
             j += 1
             
