@@ -1,25 +1,14 @@
 import math
 import random
 import numpy as np
-
-def sigmoid(x):
-    x = np.clip( x, -500, 500 )
-    return 1 / (1 + np.exp(-x))
-    
-def sigmoidD(x):
-    return np.multiply(sigmoid(x), 1 - sigmoid(x))
-    
-def tanh(x):
-    return np.tanh(x)
-
-def tanhD(x):
-    return (1.0 - np.multiply(np.tanh(x), np.tanh(x)))
+import activationFunctions
+import layer
 
 def activation(x):
-    return tanh(x)
+    return activationFunctions.tanh(x)
 
 def activationD(x):
-    return tanhD(x)
+    return activationFunctions.tanhD(x)
     
 class NeuralNetwork:
     learningRate = 0.2
@@ -27,12 +16,29 @@ class NeuralNetwork:
     weights = []
     bias = []
     shape = []
-
+    activations = []
+    activationsD = []
+    layerList = []
+    
     def __init__(self, input):
         self.initWeights(input)
         self.initBias(input)
         self.shape = input
+    
+    def reinit(self, input):
+        self.initWeights(input)
+        self.initBias(input)
+        self.shape = input
+        
+    #def __init__(self):
+    #    self.shape = []
 
+    def addDenseConvolutionLayer(self, size):
+        l = layer(size, self.layerList[len(self.layerList - 1)])
+        
+    def newTrain():
+        pass
+        
     #receives and returns in list form [-,-,-]
     def guess(self, input):
         inputMatrix = np.matrix(input)
@@ -97,11 +103,12 @@ class NeuralNetwork:
                 self.weights[it] = np.subtract(self.weights[it], np.matmul(outputList[it], np.transpose(self.learningRate * np.multiply(errorList[len(errorList) - 1 -it], outputGradient)))) ##wtf
                 
                 self.bias[it] = np.subtract(self.bias[it], np.multiply(errorList[len(errorList) - 1 - it], outputGradient) * self.learningRate)
-                #self.bias[it] = activation(self.bias[it])
+
                 it += 1
             j += 1
             
     def initWeights(self, input):
+        self.weights.clear()
         for k in range(len(input) - 1):
             temp = []
             for i in range(input[k]):
@@ -112,6 +119,7 @@ class NeuralNetwork:
             self.weights.append(np.matrix(temp))
 
     def initBias(self, input):
+        self.bias.clear()
         for k in range(len(input) - 1):
             temp = []
             for i in range(input[k+1]):
