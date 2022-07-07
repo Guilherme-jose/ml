@@ -55,7 +55,7 @@ def solveCenter(nn):
         output.append([0])
         
     for i in range(50):
-        r = np.random.uniform(0.0, 0.3)
+        r = np.random.uniform(0.0, 0.4)
         angle = np.random.uniform(0.0, 2 * pi)
         x = (r * sin(angle) + 1)/2
         y = (r * cos(angle) + 1)/2
@@ -64,8 +64,8 @@ def solveCenter(nn):
         
     print("--------------------")
 
-    for i in range(20):
-        nn.train(input, output, 10)
+    for i in range(80):
+        nn.train(input, output, 5)
         showSpace(40)
       
     for i in input:          
@@ -85,14 +85,14 @@ nn = nn.NeuralNetwork(2)
 nn.addDenseLayer(10)
 nn.addDenseLayer(5)
 nn.addDenseLayer(1)
-solveXOR(nn)
-#solveCenter(nn)
+#solveXOR(nn)
+solveCenter(nn)
     
 
 while(True):
     for event in pygame.event.get():
         if event.type == pygame.QUIT: sys.exit()
-        if event.type == pygame.KEYDOWN: solveXOR(nn)
+        if event.type == pygame.KEYDOWN: solveCenter(nn)
     
     pygame.display.flip()
 
