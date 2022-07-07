@@ -17,7 +17,7 @@ def showSpace(resolution):
             k = 255*v[0][0]
             k = max(0, k)
             k = min(255, k)
-            pygame.draw.circle(screen,[55,0,k,k],[(500/resolution)*i+1,(500/resolution)*j+1],300/resolution)
+            pygame.draw.circle(screen,[55,0,k,255],[(500/resolution)*i+1,(500/resolution)*j+1],300/resolution)
     pygame.display.flip()
 
 def solveXOR(nn):

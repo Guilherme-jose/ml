@@ -1,3 +1,4 @@
+from asyncore import write
 from random import randrange
 from PIL import Image
 import numpy as np
@@ -36,7 +37,8 @@ for i in range(100000):
 
 temp = nn.weights
 s = ''.join(str(x) for x in temp)
-print(s)
+dump = open("weightDump.txt", "w")
+write(s)
 
 for i in range(100):
     if(randrange(0,2) == 0):

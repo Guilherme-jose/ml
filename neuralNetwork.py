@@ -19,111 +19,61 @@ class NeuralNetwork:
     activations = []
     activationsD = []
     layerList = []
+    inputSize = 0
+    
+    batchSize = 1.0 #how much of the dataset to include in the training set for a given iteration
     
     def __init__(self, input):
-        self.initWeights(input)
-        self.initBias(input)
-        self.shape = input
+        self.inputSize = input
+        
+    def reinit(self):
+        for i in self.layerList:
+            i.reinit()
+        
+    def addDenseLayer(self, size, activationFunction=activationFunctions.tanh):
+        prevSize = self.inputSize
+        if(len(self.layerList) > 0):
+            prevSize = self.layerList[len(self.layerList) - 1].size
+        l = layer.layer(size, prevSize)
+        self.layerList.append(l)
     
-    def reinit(self, input):
-        self.initWeights(input)
-        self.initBias(input)
-        self.shape = input
-        
-    #def __init__(self):
-    #    self.shape = []
-
-    def addDenseConvolutionLayer(self, size):
-        l = layer(size, self.layerList[len(self.layerList - 1)])
-        
-    def newTrain():
-        pass
-        
-    #receives and returns in list form [-,-,-]
     def guess(self, input):
         inputMatrix = np.matrix(input)
         inputMatrix = np.transpose(inputMatrix)
-        outputMatrix = np.matrix([])
         
-        it = 0
-        for k in self.weights:
+        outputMatrix = inputMatrix
+        for it in range(len(self.layerList)):
+            outputMatrix = self.layerList[it].forward(outputMatrix)
             
-            outputMatrix = np.matmul(np.transpose(k), inputMatrix)
-            outputMatrix = np.add(outputMatrix, self.bias[it])
-            outputMatrix = activation(outputMatrix)
-
-            inputMatrix = outputMatrix
-            it += 1
         return outputMatrix.tolist()
-
-    def train(self, inputSet, outputSet):
-        j = 0
-        for i in inputSet:
-            outputList = []
-            errorList = []
-
-            ################################################
-            outputTarget = np.matrix(outputSet[j])
-            outputTarget = np.transpose(outputTarget)
-            
-            inputMatrix = np.matrix(i)
-            inputMatrix = np.transpose(inputMatrix)
-            
-            
-            outputList.append(inputMatrix)
-            tempMatrix = inputMatrix
-            it = 0
-            for k in self.weights:
-                outputMatrix = np.matmul(np.transpose(k), tempMatrix)
-                outputMatrix = np.add(outputMatrix, self.bias[it])
-                outputMatrix = activation(outputMatrix)
+        
+    def train(self, inputSet, outputSet, epochs):
+        for epoch in range(epochs):
+            for k in range(len(inputSet)):#range(math.floor(len(inputSet)*self.batchSize)):
+                j = random.randrange(0, len(outputSet))
                 
-                outputList.append(outputMatrix)
-                
-                
-                tempMatrix = outputMatrix
-                it += 1
-            
-            ##### linear algebra
-            
-            #if(random.randrange(1,1000) == 999):
-                #print(outputTarget, outputMatrix)
-            
-            
-            errorList.append(np.subtract(outputMatrix, outputTarget))
-            
-            it = 0
-            for w in self.weights:
-                errorList.append(np.matmul(self.weights[len(self.weights) - 1 - it], errorList[it]))
-                it += 1
-            errorList.pop()
-            it = 0
-            for w in self.weights:
-                outputGradient = activationD(outputList[it + 1])
-                self.weights[it] = np.subtract(self.weights[it], np.matmul(outputList[it], np.transpose(self.learningRate * np.multiply(errorList[len(errorList) - 1 -it], outputGradient)))) ##wtf
-                
-                self.bias[it] = np.subtract(self.bias[it], np.multiply(errorList[len(errorList) - 1 - it], outputGradient) * self.learningRate)
+                outputList = []
+                errorList = []
 
-                it += 1
-            j += 1
-            
-    def initWeights(self, input):
-        self.weights.clear()
-        for k in range(len(input) - 1):
-            temp = []
-            for i in range(input[k]):
-                temp2 = []
-                for j in range(input[k+1]):
-                    temp2.append(random.uniform(-1,1))
-                temp.append(temp2)
-            self.weights.append(np.matrix(temp))
-
-    def initBias(self, input):
-        self.bias.clear()
-        for k in range(len(input) - 1):
-            temp = []
-            for i in range(input[k+1]):
-                temp.append(random.uniform(-1,1))
-            self.bias.append(np.transpose(np.matrix(temp)))
-
+                outputTarget = np.transpose(np.matrix(outputSet[j]))
+                inputMatrix = np.transpose(np.matrix(inputSet[j]))
+                
+                outputList.append(inputMatrix)
+                outputMatrix = inputMatrix
+                
+                for it in range(len(self.layerList)):
+                    outputMatrix = self.layerList[it].forward(outputMatrix)
+                    outputList.append(outputMatrix)
+                
+                errorList.append(np.subtract(outputMatrix, outputTarget))
+                
+                for i in range(len(self.layerList)):
+                    errorList.append(self.layerList[len(self.layerList) - i - 1].findError(errorList[i]))
+                errorList.pop()
+                
+                for i in range(len(self.layerList)):
+                    self.layerList[i].backPropagation(outputList[i], outputList[i + 1], errorList[len(errorList) - i - 1])
+            if(epoch%1000==0):
+                print("epoch:", epoch)
+                
     
