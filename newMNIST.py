@@ -26,7 +26,14 @@ for i in range(60000):
 dataset.close()
 
 nn = nn.NeuralNetwork(784)
-nn.addDenseLayer(128, activationFunctions.sigmoid, activationFunctions.sigmoidD)
+#nn.addWidenLayer(28)
+#nn.addConvLayer(28,5)
+#nn.addMaxPoolLayer(28)
+#nn.addConvLayer(14,5)
+#nn.addMaxPoolLayer(14)
+#nn.addFlattenLayer(14, 196)
+nn.addDenseLayer(120, activationFunctions.sigmoid, activationFunctions.sigmoidD)
+#nn.addDenseLayer(84, activationFunctions.sigmoid, activationFunctions.sigmoidD)
 nn.addDenseLayer(10, activationFunctions.sigmoid, activationFunctions.sigmoidD)
 nn.train(trainingSet, trainingOutput, 3, "classifier")
 

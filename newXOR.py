@@ -3,6 +3,7 @@ import numpy as np
 from random import Random, random, randrange
 import sys
 
+import activationFunctions
 from numpy import pi
 import neuralNetwork as nn
 import pygame
@@ -64,7 +65,7 @@ def solveCenter(nn):
         
     print("--------------------")
 
-    for i in range(80):
+    for i in range(20):
         nn.train(input, output, 5)
         showSpace(40)
       
@@ -82,9 +83,8 @@ black = 0, 0, 0
 screen = pygame.display.set_mode(size)
 
 nn = nn.NeuralNetwork(2)
-nn.addDenseLayer(10)
-nn.addDenseLayer(5)
-nn.addDenseLayer(1)
+nn.addDenseLayer(100, activationFunctions.leakyRelu, activationFunctions.leakyReluD)
+nn.addDenseLayer(1, activationFunctions.leakyRelu, activationFunctions.leakyReluD)
 #solveXOR(nn)
 solveCenter(nn)
     
@@ -92,7 +92,7 @@ solveCenter(nn)
 while(True):
     for event in pygame.event.get():
         if event.type == pygame.QUIT: sys.exit()
-        if event.type == pygame.KEYDOWN: solveCenter(nn)
+        if event.type == pygame.KEYDOWN: solveXOR(nn)
     
     pygame.display.flip()
 

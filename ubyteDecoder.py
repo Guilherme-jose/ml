@@ -52,10 +52,10 @@ def main():
     % n_images)
   convert("train-images.idx3-ubyte",
           "train-labels.idx1-ubyte",
-          "mnist_train_1000.txt", 1000)
+          "mnist_test_60000.txt", 60000)
   
   print("\nShowing train image [0]: ")
-  img_file = ".\\mnist_train_1000.txt"
+  img_file = ".\\mnist_train_60000.txt"
   display_from_file(img_file, idx=0)  # first image
   
 main()
