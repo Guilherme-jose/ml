@@ -46,8 +46,8 @@ class NeuralNetwork:
         l = layer.softmaxLayer(prevSize)
         self.layerList.append(l)
         
-    def addConvLayer(self, size, kernelSize):
-        l = layer.kernelLayer(kernelSize, size)
+    def addConvLayer(self, size, kernelSize, activation=activationFunctions.sigmoid, activationD=activationFunctions.sigmoidD):
+        l = layer.kernelLayer(kernelSize, size, activation, activationD)
         self.layerList.append(l)
         
     def addFlattenLayer(self, size, outSize):
@@ -63,8 +63,8 @@ class NeuralNetwork:
         self.layerList.append(l)
         
     def guess(self, input):
-        inputMatrix = np.matrix(input)
-        inputMatrix = np.transpose(inputMatrix)
+        inputMatrix = np.array(input, ndmin=2)
+        inputMatrix = inputMatrix.T
         
         outputMatrix = inputMatrix
         for it in range(len(self.layerList)):
@@ -81,8 +81,8 @@ class NeuralNetwork:
                 outputList = []
                 errorList = []
 
-                outputTarget = np.transpose(np.matrix(outputSet[j]))
-                inputMatrix = np.transpose(np.matrix(inputSet[j]))
+                outputTarget = np.array(outputSet[j], ndmin=2).T
+                inputMatrix = np.array(inputSet[j], ndmin=2).T
                 
                 outputList.append(inputMatrix)
                 outputMatrix = inputMatrix

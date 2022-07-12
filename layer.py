@@ -30,19 +30,21 @@ class layer:
     
     #takes input as matrix, for use inside the network
     def forward(self, input):
-        output = np.matmul(np.transpose(self.weights), input)
+        output = np.dot(self.weights.T, input)
         output = np.add(output, self.bias)
         output = self.actFunc(output)
         return output
     
     def backPropagation(self, input, output, error):
         gradient = self.actFuncDerivative(output)
-        
-        self.weights = np.subtract(self.weights, np.matmul(input, np.transpose(self.learningRate * np.multiply(error, gradient))))
+        delta = self.learningRate * (error * gradient)
+        delta = delta.T
+        delta = input@delta
+        self.weights = np.subtract(self.weights, delta)
         self.bias = np.subtract(self.bias, np.multiply(error, gradient) * self.learningRate * 0.5)
     
     def findError(self, prevError):
-        return np.matmul(self.weights, prevError)
+        return self.weights@prevError
     
     def initWeights(self, size, inputSize):
         temp = []
@@ -51,13 +53,13 @@ class layer:
             for j in range(size):
                 temp2.append(random.uniform(-1,1))
             temp.append(temp2)
-        self.weights = np.matrix(temp)
+        self.weights = np.array(temp, ndmin=2)
             
     def initBias(self, size):
         temp = []
         for j in range(size):
             temp.append(random.uniform(-1,1))
-        self.bias = np.transpose(np.matrix(temp))
+        self.bias = np.array(temp, ndmin=2).T
     
     
 class softmaxLayer(layer):
@@ -109,26 +111,20 @@ class kernelLayer(layer):
     
     def backPropagation(self, input, output, error):
         gradient = self.actFuncDerivative(output)
-        error =  np.multiply(error, gradient)
-        if((input.size%self.kernelSize) != 0):
-            input = np.reshape(-1,1)
-            error = np.reshape(-1,1)
-            shapedInput = np.pad(input.astype(float), (0, (self.kernelSize)*((input.size//self.kernelSize)+1) - input.size), mode='constant', constant_values=0).reshape(self.kernelSize,-1)
-            shapedError = np.pad(error.astype(float), (0, (self.kernelSize)*((error.size//self.kernelSize)+1) - error.size), mode='constant', constant_values=0).reshape(self.kernelSize,-1)
-        else:
-            shapedInput = np.reshape(input, (self.kernelSize,-1))
-            shapedError = np.reshape(error, (self.kernelSize,-1))
         
+        delta = signal.convolve2d(input, error * gradient, mode="valid")
+        delta = self.learningRate * delta
         
-        self.weights = np.subtract(self.weights, np.matmul(shapedInput, np.transpose(self.learningRate * shapedError)))
+        self.weights = np.subtract(self.weights, delta)
+        
         
     def forward(self, input):
-        output = signal.convolve2d(input, self.weights, mode="same")
+        output = signal.convolve2d(input,self.weights, mode="valid")
         output = self.actFunc(output)
-        return input
+        return output
     
     def findError(self, prevError):
-        return prevError
+        return signal.convolve2d(prevError, np.rot90(self.weights, 2))
 
 class flattenLayer(layer):
     def __init__(self, outSize, size, activation=activationFunctions.tanh, activationD=activationFunctions.tanhD) -> None:
@@ -170,6 +166,7 @@ class widenLayer(layer):
         return output
     
 class maxPoolLayer(layer):
+    method = "max"
     def __init__(self, size, activation=activationFunctions.tanh, activationD=activationFunctions.tanhD) -> None:
         self.size = size
         
@@ -196,10 +193,10 @@ class maxPoolLayer(layer):
 
         new_shape=(ny,ky,nx,kx)+input.shape[2:]
 
-        #if method=='max':
-        result=np.nanmax(mat_pad.reshape(new_shape),axis=(1,3))
-        #else:
-           # result=np.nanmean(input.reshape(new_shape),axis=(1,3))
+        if self.method=='max':
+            result=np.nanmax(mat_pad.reshape(new_shape),axis=(1,3))
+        else:
+            result=np.nanmean(input.reshape(new_shape),axis=(1,3))
 
         return result
     
