@@ -1,7 +1,7 @@
 import random
 import numpy as np
 import activationFunctions
-import layer
+from layers.layer import layer
 
 class reshapeLayer(layer):
     def __init__(self, inputShape, outputShape, activation=activationFunctions.tanh, activationD=activationFunctions.tanhD) -> None:

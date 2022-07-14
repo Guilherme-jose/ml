@@ -1,4 +1,4 @@
-from layer import layer
+from layers.layer import layer
 from scipy import signal
 import activationFunctions
 import numpy as np

@@ -2,9 +2,10 @@ import math
 import random
 import numpy as np
 import pygame
-import convolutionLayer
+import layers.convolutionLayer as convolutionLayer
+import layers.reshapeLayer as reshapeLayer
 import activationFunctions
-import layer
+import layers.layer as layer
     
 class NeuralNetwork:
     learningRate = 0.2
@@ -30,23 +31,12 @@ class NeuralNetwork:
         l = layer.layer((prevSize, 1), (size, 1), activationFunction, activationFunctionD)
         self.layerList.append(l)
         
-    def addSoftmaxLayer(self):
-        prevSize = self.inputSize
-        if(len(self.layerList) > 0):
-            prevSize = self.layerList[len(self.layerList) - 1].size
-        l = layer.softmaxLayer(prevSize)
-        self.layerList.append(l)
-        
     def addConvLayer(self, inputShape, kernelSize, kernelDepth=1, activation=activationFunctions.sigmoid, activationD=activationFunctions.sigmoidD):
         l = convolutionLayer.kernelLayer(inputShape, kernelSize, kernelDepth, activation, activationD)
         self.layerList.append(l)
         
     def addReshapeLayer(self, inputShape, outputShape):
-        l = layer.reshapeLayer(inputShape, outputShape)
-        self.layerList.append(l)
-        
-    def addMaxPoolLayer(self, size):
-        l = layer.maxPoolLayer(size)
+        l = reshapeLayer.reshapeLayer(inputShape, outputShape)
         self.layerList.append(l)
         
     def guess(self, input):
