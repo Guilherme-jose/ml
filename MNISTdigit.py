@@ -26,19 +26,9 @@ for i in range(600):
 dataset.close()
 
 nn = nn.NeuralNetwork(784)
-#nn.addReshapeLayer((784,1), (1,28,28))
-#nn.addConvLayer((1, 28, 28), 5, 6, activationFunctions.sigmoid, activationFunctions.sigmoidD)
-#nn.addMaxPoolLayer((6,24,24))
-#nn.addConvLayer((6, 12, 12), 5, 16, activationFunctions.sigmoid, activationFunctions.sigmoidD)
-#nn.addMaxPoolLayer((16,8,8))
-#nn.addReshapeLayer((16,8,8), (1024,1))
 nn.addDenseLayer(120, activationFunctions.sigmoid, activationFunctions.sigmoidD)
-#nn.addDenseLayer(84, activationFunctions.sigmoid, activationFunctions.sigmoidD)
 nn.addDenseLayer(10, activationFunctions.sigmoid, activationFunctions.sigmoidD)
 nn.train(trainingSet, trainingOutput, 3, "classifier")
 
-
-
-    
 print("finished")
 
