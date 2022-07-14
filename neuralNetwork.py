@@ -41,12 +41,8 @@ class NeuralNetwork:
         l = convolutionLayer.kernelLayer(inputShape, kernelSize, kernelDepth, activation, activationD)
         self.layerList.append(l)
         
-    def addFlattenLayer(self, inputShape, outputShape):
-        l = layer.flattenLayer(inputShape, outputShape)
-        self.layerList.append(l)
-    
-    def addWidenLayer(self, inputShape, outputShape):
-        l = layer.widenLayer(inputShape, outputShape)
+    def addReshapeLayer(self, inputShape, outputShape):
+        l = layer.reshapeLayer(inputShape, outputShape)
         self.layerList.append(l)
         
     def addMaxPoolLayer(self, size):

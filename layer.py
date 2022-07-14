@@ -92,7 +92,7 @@ class softmaxLayer(layer):
         return prevError
 
 
-class flattenLayer(layer):
+class reshapeLayer(layer):
     def __init__(self, inputShape, outputShape, activation=activationFunctions.tanh, activationD=activationFunctions.tanhD) -> None:
         self.inputShape = inputShape
         self.outputShape = outputShape
@@ -109,25 +109,6 @@ class flattenLayer(layer):
         output = np.reshape(input, self.outputShape)
         return output
     
-class widenLayer(layer):
-    def __init__(self, inputShape, outputShape, activation=activationFunctions.tanh, activationD=activationFunctions.tanhD) -> None:
-        self.inputShape = inputShape
-        self.outputShape = outputShape
-        
-    def reinit(self) -> None:
-        pass
-    
-    def findError(self, prevError, output=None):
-        #r = np.reshape(prevError, self.inputShape)
-        pass
-    
-    def backPropagation(self, input, output, error):
-        r = np.reshape(error, self.inputShape)
-        return r
-        
-    def forward(self, input):
-        output = np.reshape(input, self.outputShape)
-        return output
     
 class maxPoolLayer(layer):
     method = "max"
