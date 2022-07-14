@@ -14,7 +14,7 @@ trainingOutput = []
 dataset = open("mnist_train_60000.txt")
 imageRes = [28,28]
 
-for i in range(60000):
+for i in range(600):
     input = dataset.readline()
     inputArray = input.split()
     label = inputArray.pop()
@@ -26,10 +26,12 @@ for i in range(60000):
 dataset.close()
 
 nn = nn.NeuralNetwork(784)
-#nn.addWidenLayer((784,1), (1,28,28))
+#nn.addReshapeLayer((784,1), (1,28,28))
 #nn.addConvLayer((1, 28, 28), 5, 6, activationFunctions.sigmoid, activationFunctions.sigmoidD)
-#nn.addConvLayer((6, 24, 24), 5, 16, activationFunctions.sigmoid, activationFunctions.sigmoidD)
-#nn.addFlattenLayer((16,20,20), (6400,1))
+#nn.addMaxPoolLayer((6,24,24))
+#nn.addConvLayer((6, 12, 12), 5, 16, activationFunctions.sigmoid, activationFunctions.sigmoidD)
+#nn.addMaxPoolLayer((16,8,8))
+#nn.addReshapeLayer((16,8,8), (1024,1))
 nn.addDenseLayer(120, activationFunctions.sigmoid, activationFunctions.sigmoidD)
 #nn.addDenseLayer(84, activationFunctions.sigmoid, activationFunctions.sigmoidD)
 nn.addDenseLayer(10, activationFunctions.sigmoid, activationFunctions.sigmoidD)

@@ -32,7 +32,7 @@ def solveXOR(nn):
     
     print("--------------------")
 
-    for i in range(10):
+    for i in range(20):
         nn.train(input, output, 100)
         showSpace(20)
                 
@@ -84,10 +84,8 @@ screen = pygame.display.set_mode(size)
 
 nn = nn.NeuralNetwork(2)
 
-nn.addReshapeLayer((2,1),(1,2,1))
-#nn.addConvLayer((1,2,1), 1, 1, activationFunctions.leakyRelu, activationFunctions.leakyReluD)
-nn.addReshapeLayer((1,2,1), (2,1))
-nn.addDenseLayer(100, activationFunctions.leakyRelu, activationFunctions.leakyReluD)
+nn.addDenseLayer(20, activationFunctions.leakyRelu, activationFunctions.leakyReluD)
+nn.addDenseLayer(20, activationFunctions.leakyRelu, activationFunctions.leakyReluD)
 nn.addDenseLayer(1, activationFunctions.leakyRelu, activationFunctions.leakyReluD)
 #solveXOR(nn)
 solveCenter(nn)

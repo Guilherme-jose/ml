@@ -5,7 +5,8 @@ import pygame
 import convolutionLayer
 import activationFunctions
 import layer
-    
+import lossFunctions
+
 class NeuralNetwork:
     learningRate = 0.2
 
@@ -62,7 +63,7 @@ class NeuralNetwork:
         iterations = 0
         for epoch in range(epochs):
             for k in range(len(inputSet)):#range(math.floor(len(inputSet)*self.batchSize)):
-                j = random.randrange(0, len(outputSet)-1)
+                j = random.randrange(0, len(outputSet))
                 
                 outputList = []
 
@@ -76,7 +77,7 @@ class NeuralNetwork:
                     outputMatrix = self.layerList[it].forward(outputMatrix)
                     outputList.append(outputMatrix)
                 
-                error = np.subtract(outputMatrix, outputTarget)
+                error = lossFunctions.mse_prime(outputTarget, outputMatrix)
                 
                 for i in range(len(self.layerList)):
                     error = self.layerList[len(self.layerList) - 1 - i].backPropagation(outputList[len(outputList )- 2 - i], outputList[len(outputList) - 1 - i], error)

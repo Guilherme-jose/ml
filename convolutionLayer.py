@@ -22,24 +22,25 @@ class kernelLayer(layer):
         self.initWeights()
         self.initBias()
     
-    def backPropagation(self, input, output, prevError):
-        weightGradient = np.zeros(self.kernelShape)
-        error = np.zeros(self.inputShape)
-        gradient = self.actFuncDerivative(output) * prevError
+    def backPropagation(self, input, output, gradient):
+        gradient = gradient *  self.actFuncDerivative(output)
+        kernels_gradient = np.zeros(self.kernelShape)
+        input_gradient = np.zeros(self.inputShape)
+
         for i in range(self.kernelDepth):
             for j in range(self.inputDepth):
-                weightGradient[i,j] = signal.correlate2d(input[j], gradient[i], "valid")
-                error[j] += signal.convolve2d(gradient[i], self.weights[i,j], "full")
-        self.weights -= self.learningRate * weightGradient
+                kernels_gradient[i, j] = signal.correlate2d(input[j], gradient[i], "valid")
+                input_gradient[j] += signal.convolve2d(gradient[i], self.weights[i, j], "full")
+
+        self.weights -= self.learningRate * kernels_gradient
         self.bias -= self.learningRate * gradient
-        
-        return error
+        return input_gradient
     
     def forward(self, input):
         output = np.copy(self.bias)
         for i in range(self.kernelDepth):
             for j in range(self.inputDepth):
-                output += signal.correlate2d(input[j], self.weights[i, j], "valid")
+                output[i] += signal.correlate2d(input[j], self.weights[i, j], "valid")
                 
         output = self.actFunc(output)
         return output

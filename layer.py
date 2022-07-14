@@ -28,18 +28,17 @@ class layer:
     
     #takes input as matrix, for use inside the network
     def forward(self, input):
-        output = np.dot(self.weights.T, input)
-        output = np.add(output, self.bias)
+        output = self.weights.T@input + self.bias
         output = self.actFunc(output)
         return output
     
-    def backPropagation(self, input, output, error):
-        gradient =  (error * self.actFuncDerivative(output))
-        rValue = self.weights@error
-        delta = input@gradient.T
-        self.weights = np.subtract(self.weights, self.learningRate * delta)
+    def backPropagation(self, input, output, gradient):
+        gradient = gradient * self.actFuncDerivative(output)
+        delta = gradient@input.T
+        error = self.weights@gradient
+        self.weights = np.subtract(self.weights, self.learningRate * delta.T)
         self.bias =  np.subtract(self.bias, self.learningRate * gradient)
-        return rValue
+        return error
     
     def initWeights(self):
         temp = []
@@ -120,29 +119,31 @@ class maxPoolLayer(layer):
     
     #takes input as matrix, for use inside the network
     def forward(self, input): #recheck later
-        m, n = input.shape[:2]
-        ky,kx= (2,2)
-        pad = True
-        _ceil=lambda x,y: int(np.ceil(x/float(y)))
+        out = np.zeros((input.shape[0], input.shape[1]//2, input.shape[2]//2))
+        for it in range(input.shape[0]):
+            m, n = input[it].shape[:2]
+            ky,kx= (2,2)
+            pad = True
+            _ceil=lambda x,y: int(np.ceil(x/float(y)))
 
-        if pad:
-            ny=_ceil(m,ky)
-            nx=_ceil(n,kx)
-            size=(ny*ky, nx*kx)+input.shape[2:]
-            mat_pad=np.full(size,np.nan)
-            mat_pad[:m,:n,...]=input
-        else:
-            ny=m//ky
-            nx=n//kx
-            mat_pad=input[:ny*ky, :nx*kx, ...]
+            if pad:
+                ny=_ceil(m,ky)
+                nx=_ceil(n,kx)
+                size=(ny*ky, nx*kx)+input[it].shape[2:]
+                mat_pad=np.full(size,np.nan)
+                mat_pad[:m,:n,...]=input[it]
+            else:
+                ny=m//ky
+                nx=n//kx
+                mat_pad=input[it][:ny*ky, :nx*kx, ...]
 
-        new_shape=(ny,ky,nx,kx)+input.shape[2:]
+            new_shape=(ny,ky,nx,kx)+input[it].shape[2:]
 
-        if self.method=='max':
-            result=np.nanmax(mat_pad.reshape(new_shape),axis=(1,3))
-        else:
-            result=np.nanmean(input.reshape(new_shape),axis=(1,3))
-
+            if self.method=='max':
+                result=np.nanmax(mat_pad.reshape(new_shape),axis=(1,3))
+            else:
+                result=np.nanmean(input[it].reshape(new_shape),axis=(1,3))
+            out[it] = result
         return result
     
     def backPropagation(self, input, output, error):
