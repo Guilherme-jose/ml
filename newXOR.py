@@ -83,6 +83,10 @@ black = 0, 0, 0
 screen = pygame.display.set_mode(size)
 
 nn = nn.NeuralNetwork(2)
+
+nn.addWidenLayer((2,1),(1,2,1))
+nn.addConvLayer((1,2,1), 1, 1, activationFunctions.leakyRelu, activationFunctions.leakyReluD)
+nn.addFlattenLayer((1,2,1), (2,1))
 nn.addDenseLayer(100, activationFunctions.leakyRelu, activationFunctions.leakyReluD)
 nn.addDenseLayer(1, activationFunctions.leakyRelu, activationFunctions.leakyReluD)
 #solveXOR(nn)

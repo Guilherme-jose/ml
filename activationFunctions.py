@@ -5,6 +5,7 @@ def sigmoid(x):
     return 1 / (1 + np.exp(-x))
     
 def sigmoidD(x):
+    x = np.clip( x, -500, 500 )
     return np.multiply(x, 1 - x)
     
 def tanh(x):

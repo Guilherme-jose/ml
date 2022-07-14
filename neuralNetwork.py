@@ -1,24 +1,15 @@
 import math
 import random
 import numpy as np
+import pygame
+import convolutionLayer
 import activationFunctions
 import layer
-import pygame
-
-def activation(x):
-    return activationFunctions.tanh(x)
-
-def activationD(x):
-    return activationFunctions.tanhD(x)
     
 class NeuralNetwork:
     learningRate = 0.2
-    
-    weights = []
-    bias = []
+
     shape = []
-    activations = []
-    activationsD = []
     layerList = []
     inputSize = 0
     
@@ -35,8 +26,8 @@ class NeuralNetwork:
     def addDenseLayer(self, size, activationFunction=activationFunctions.tanh, activationFunctionD=activationFunctions.tanhD):
         prevSize = self.inputSize
         if(len(self.layerList) > 0):
-            prevSize = self.layerList[len(self.layerList) - 1].size
-        l = layer.layer(size, prevSize, activationFunction, activationFunctionD)
+            prevSize = self.layerList[len(self.layerList) - 1].outputShape[0]
+        l = layer.layer((prevSize, 1), (size, 1), activationFunction, activationFunctionD)
         self.layerList.append(l)
         
     def addSoftmaxLayer(self):
@@ -46,16 +37,16 @@ class NeuralNetwork:
         l = layer.softmaxLayer(prevSize)
         self.layerList.append(l)
         
-    def addConvLayer(self, size, kernelSize, activation=activationFunctions.sigmoid, activationD=activationFunctions.sigmoidD):
-        l = layer.kernelLayer(kernelSize, size, activation, activationD)
+    def addConvLayer(self, inputShape, kernelSize, kernelDepth=1, activation=activationFunctions.sigmoid, activationD=activationFunctions.sigmoidD):
+        l = convolutionLayer.kernelLayer(inputShape, kernelSize, kernelDepth, activation, activationD)
         self.layerList.append(l)
         
-    def addFlattenLayer(self, size, outSize):
-        l = layer.flattenLayer(outSize, size)
+    def addFlattenLayer(self, inputShape, outputShape):
+        l = layer.flattenLayer(inputShape, outputShape)
         self.layerList.append(l)
     
-    def addWidenLayer(self, size):
-        l = layer.widenLayer(size)
+    def addWidenLayer(self, inputShape, outputShape):
+        l = layer.widenLayer(inputShape, outputShape)
         self.layerList.append(l)
         
     def addMaxPoolLayer(self, size):
@@ -63,8 +54,7 @@ class NeuralNetwork:
         self.layerList.append(l)
         
     def guess(self, input):
-        inputMatrix = np.array(input, ndmin=2)
-        inputMatrix = inputMatrix.T
+        inputMatrix = np.array(input, ndmin=2).T
         
         outputMatrix = inputMatrix
         for it in range(len(self.layerList)):
@@ -79,7 +69,6 @@ class NeuralNetwork:
                 j = random.randrange(0, len(outputSet)-1)
                 
                 outputList = []
-                errorList = []
 
                 outputTarget = np.array(outputSet[j], ndmin=2).T
                 inputMatrix = np.array(inputSet[j], ndmin=2).T
@@ -91,14 +80,10 @@ class NeuralNetwork:
                     outputMatrix = self.layerList[it].forward(outputMatrix)
                     outputList.append(outputMatrix)
                 
-                errorList.append(np.subtract(outputMatrix, outputTarget))
+                error = np.subtract(outputMatrix, outputTarget)
                 
                 for i in range(len(self.layerList)):
-                    errorList.append(self.layerList[len(self.layerList) - i - 1].findError(errorList[i]))
-                errorList.pop()
-                
-                for i in range(len(self.layerList)):
-                    self.layerList[i].backPropagation(outputList[i], outputList[i + 1], errorList[len(errorList) - i - 1])
+                    error = self.layerList[len(self.layerList) - 1 - i].backPropagation(outputList[len(outputList )- 2 - i], outputList[len(outputList) - 1 - i], error)
                     
                     
                 iterations += 1

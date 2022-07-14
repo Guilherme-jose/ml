@@ -1,7 +1,6 @@
 import random
 import numpy as np
 import activationFunctions
-from scipy import signal
 
 class layer:
     def activation():
@@ -13,20 +12,19 @@ class layer:
     weights = []
     bias = []
     learningRate = 0.1
-    size = 0
     inputSize = 0
     
-    def __init__(self, size, inputSize, activation=activationFunctions.tanh, activationD=activationFunctions.tanhD) -> None:
-        self.size = size
-        self.inputSize = inputSize
-        self.initWeights(size, inputSize)
-        self.initBias(size)
+    def __init__(self, inputShape, outputShape, activation=activationFunctions.tanh, activationD=activationFunctions.tanhD) -> None:
+        self.inputShape = inputShape
+        self.outputShape = outputShape
+        self.initWeights()
+        self.initBias()
         self.actFunc = activation
         self.actFuncDerivative = activationD
         
     def reinit(self) -> None:
-        self.initWeights(self.size, self.inputSize)
-        self.initBias(self.size)
+        self.initWeights()
+        self.initBias()
     
     #takes input as matrix, for use inside the network
     def forward(self, input):
@@ -36,28 +34,25 @@ class layer:
         return output
     
     def backPropagation(self, input, output, error):
-        gradient = self.actFuncDerivative(output)
-        delta = self.learningRate * (error * gradient)
-        delta = delta.T
-        delta = input@delta
-        self.weights = np.subtract(self.weights, delta)
-        self.bias = np.subtract(self.bias, np.multiply(error, gradient) * self.learningRate * 0.5)
+        gradient =  (error * self.actFuncDerivative(output))
+        rValue = self.weights@error
+        delta = input@gradient.T
+        self.weights = np.subtract(self.weights, self.learningRate * delta)
+        self.bias =  np.subtract(self.bias, self.learningRate * gradient)
+        return rValue
     
-    def findError(self, prevError):
-        return self.weights@prevError
-    
-    def initWeights(self, size, inputSize):
+    def initWeights(self):
         temp = []
-        for i in range(inputSize):
+        for i in range(self.inputShape[0]):
             temp2 = []
-            for j in range(size):
+            for j in range(self.outputShape[0]):
                 temp2.append(random.uniform(-1,1))
             temp.append(temp2)
         self.weights = np.array(temp, ndmin=2)
             
-    def initBias(self, size):
+    def initBias(self):
         temp = []
-        for j in range(size):
+        for j in range(self.outputShape[0]):
             temp.append(random.uniform(-1,1))
         self.bias = np.array(temp, ndmin=2).T
     
@@ -96,73 +91,42 @@ class softmaxLayer(layer):
     def findError(self, prevError):
         return prevError
 
-class kernelLayer(layer):
-    kernelSize = []
-    kernelNumber = 1
-    def __init__(self, kernelSize, size, activation=activationFunctions.tanh, activationD=activationFunctions.tanhD) -> None:
-        self.size = size
-        self.kernelSize = kernelSize
-        self.initWeights(kernelSize, kernelSize)
-        self.actFunc = activation
-        self.actFuncDerivative = activationD
-        
-    def reinit(self) -> None:
-        self.initWeights(self.kernelSize, self.kernelSize)
-    
-    def backPropagation(self, input, output, error):
-        gradient = self.actFuncDerivative(output)
-        
-        delta = signal.convolve2d(input, error * gradient, mode="valid")
-        delta = self.learningRate * delta
-        
-        self.weights = np.subtract(self.weights, delta)
-        
-        
-    def forward(self, input):
-        output = signal.convolve2d(input,self.weights, mode="valid")
-        output = self.actFunc(output)
-        return output
-    
-    def findError(self, prevError):
-        return signal.convolve2d(prevError, np.rot90(self.weights, 2))
 
 class flattenLayer(layer):
-    def __init__(self, outSize, size, activation=activationFunctions.tanh, activationD=activationFunctions.tanhD) -> None:
-        self.size = outSize
-        self.inSize = size
-        self.inputSize = 0
+    def __init__(self, inputShape, outputShape, activation=activationFunctions.tanh, activationD=activationFunctions.tanhD) -> None:
+        self.inputShape = inputShape
+        self.outputShape = outputShape
+        self.size = outputShape[0]
         
     def reinit(self) -> None:
         pass
     
-    def findError(self, prevError):
-        r = np.reshape(prevError, (self.inSize, -1))
-        return r
-    
     def backPropagation(self, input, output, error):
-        pass
+        r = np.reshape(error, self.inputShape)
+        return r
         
     def forward(self, input):
-        output = np.reshape(input, (-1,1))
+        output = np.reshape(input, self.outputShape)
         return output
     
 class widenLayer(layer):
-    def __init__(self, size, activation=activationFunctions.tanh, activationD=activationFunctions.tanhD) -> None:
-        self.size = size
-        self.inputSize = 0
+    def __init__(self, inputShape, outputShape, activation=activationFunctions.tanh, activationD=activationFunctions.tanhD) -> None:
+        self.inputShape = inputShape
+        self.outputShape = outputShape
         
     def reinit(self) -> None:
         pass
     
-    def findError(self, prevError):
-        r = np.reshape(prevError, (1,-1))
-        return r
+    def findError(self, prevError, output=None):
+        #r = np.reshape(prevError, self.inputShape)
+        pass
     
     def backPropagation(self, input, output, error):
-        pass
+        r = np.reshape(error, self.inputShape)
+        return r
         
     def forward(self, input):
-        output = np.reshape(input, (self.size, -1))
+        output = np.reshape(input, self.outputShape)
         return output
     
 class maxPoolLayer(layer):
