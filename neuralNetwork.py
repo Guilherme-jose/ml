@@ -6,15 +6,12 @@ import convolutionLayer
 import activationFunctions
 import layer
 import lossFunctions
+import maxPoolLayer
 
 class NeuralNetwork:
     learningRate = 0.2
-
-    shape = []
     layerList = []
-    inputSize = 0
-    
-    batchSize = 1.0 #how much of the dataset to include in the training set for a given iteration
+    batchSize = 1.0 
     
     def __init__(self, input, inputY=1):
         self.inputSize = input
@@ -31,13 +28,6 @@ class NeuralNetwork:
         l = layer.layer((prevSize, 1), (size, 1), activationFunction, activationFunctionD)
         self.layerList.append(l)
         
-    def addSoftmaxLayer(self):
-        prevSize = self.inputSize
-        if(len(self.layerList) > 0):
-            prevSize = self.layerList[len(self.layerList) - 1].size
-        l = layer.softmaxLayer(prevSize)
-        self.layerList.append(l)
-        
     def addConvLayer(self, inputShape, kernelSize, kernelDepth=1, activation=activationFunctions.sigmoid, activationD=activationFunctions.sigmoidD):
         l = convolutionLayer.kernelLayer(inputShape, kernelSize, kernelDepth, activation, activationD)
         self.layerList.append(l)
@@ -46,8 +36,8 @@ class NeuralNetwork:
         l = layer.reshapeLayer(inputShape, outputShape)
         self.layerList.append(l)
         
-    def addMaxPoolLayer(self, size):
-        l = layer.maxPoolLayer(size)
+    def addMaxPoolLayer(self, inputShape, outputShape):
+        l = maxPoolLayer.maxPoolLayer(inputShape, outputShape)
         self.layerList.append(l)
         
     def guess(self, input):
@@ -62,7 +52,7 @@ class NeuralNetwork:
     def train(self, inputSet, outputSet, epochs, mode=""):
         iterations = 0
         for epoch in range(epochs):
-            for k in range(len(inputSet)):#range(math.floor(len(inputSet)*self.batchSize)):
+            for k in range(len(inputSet)):
                 j = random.randrange(0, len(outputSet))
                 
                 outputList = []

@@ -4,7 +4,7 @@ import activationFunctions
 import numpy as np
 
 class kernelLayer(layer):
-    def __init__(self, inputShape, kernelSize, kernelDepth, activation=activationFunctions.tanh, activationD=activationFunctions.tanhD) -> None:
+    def __init__(self, inputShape, kernelSize, kernelDepth, activation=activationFunctions.tanh, activationD=activationFunctions.tanhD, pad=False) -> None:
         self.inputShape = inputShape #3 dimensions
         self.kernelSize = kernelSize
         self.kernelDepth = kernelDepth
@@ -14,7 +14,7 @@ class kernelLayer(layer):
         self.kernelShape = (kernelDepth, inputDepth, kernelSize, kernelSize)
         self.initWeights()
         self.initBias()
-        
+        self.pad = pad
         self.actFunc = activation
         self.actFuncDerivative = activationD
         

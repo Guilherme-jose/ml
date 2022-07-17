@@ -107,49 +107,5 @@ class reshapeLayer(layer):
     def forward(self, input):
         output = np.reshape(input, self.outputShape)
         return output
-    
-    
-class maxPoolLayer(layer):
-    method = "max"
-    def __init__(self, size, activation=activationFunctions.tanh, activationD=activationFunctions.tanhD) -> None:
-        self.size = size
-        
-    def reinit(self) -> None:
-        pass
-    
-    #takes input as matrix, for use inside the network
-    def forward(self, input): #recheck later
-        out = np.zeros((input.shape[0], input.shape[1]//2, input.shape[2]//2))
-        for it in range(input.shape[0]):
-            m, n = input[it].shape[:2]
-            ky,kx= (2,2)
-            pad = True
-            _ceil=lambda x,y: int(np.ceil(x/float(y)))
 
-            if pad:
-                ny=_ceil(m,ky)
-                nx=_ceil(n,kx)
-                size=(ny*ky, nx*kx)+input[it].shape[2:]
-                mat_pad=np.full(size,np.nan)
-                mat_pad[:m,:n,...]=input[it]
-            else:
-                ny=m//ky
-                nx=n//kx
-                mat_pad=input[it][:ny*ky, :nx*kx, ...]
-
-            new_shape=(ny,ky,nx,kx)+input[it].shape[2:]
-
-            if self.method=='max':
-                result=np.nanmax(mat_pad.reshape(new_shape),axis=(1,3))
-            else:
-                result=np.nanmean(input[it].reshape(new_shape),axis=(1,3))
-            out[it] = result
-        return result
-    
-    def backPropagation(self, input, output, error):
-        pass
-    
-    def findError(self, prevError):
-        prevError = np.kron(prevError, np.ones((2,2)))
-        return prevError
     
