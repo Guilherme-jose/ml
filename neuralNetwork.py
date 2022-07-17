@@ -2,19 +2,16 @@ import math
 import random
 import numpy as np
 import pygame
-import layers.convolutionLayer as convolutionLayer
-import layers.reshapeLayer as reshapeLayer
+import convolutionLayer
 import activationFunctions
-import layers.layer as layer
-    
+import layer
+import lossFunctions
+import maxPoolLayer
+
 class NeuralNetwork:
     learningRate = 0.2
-
-    shape = []
     layerList = []
-    inputSize = 0
-    
-    batchSize = 1.0 #how much of the dataset to include in the training set for a given iteration
+    batchSize = 1.0 
     
     def __init__(self, input, inputY=1):
         self.inputSize = input
@@ -36,7 +33,11 @@ class NeuralNetwork:
         self.layerList.append(l)
         
     def addReshapeLayer(self, inputShape, outputShape):
-        l = reshapeLayer.reshapeLayer(inputShape, outputShape)
+        l = layer.reshapeLayer(inputShape, outputShape)
+        self.layerList.append(l)
+        
+    def addMaxPoolLayer(self, inputShape, outputShape):
+        l = maxPoolLayer.maxPoolLayer(inputShape, outputShape)
         self.layerList.append(l)
         
     def guess(self, input):
@@ -51,8 +52,8 @@ class NeuralNetwork:
     def train(self, inputSet, outputSet, epochs, mode=""):
         iterations = 0
         for epoch in range(epochs):
-            for k in range(len(inputSet)):#range(math.floor(len(inputSet)*self.batchSize)):
-                j = random.randrange(0, len(outputSet)-1)
+            for k in range(len(inputSet)):
+                j = random.randrange(0, len(outputSet))
                 
                 outputList = []
 
@@ -66,7 +67,7 @@ class NeuralNetwork:
                     outputMatrix = self.layerList[it].forward(outputMatrix)
                     outputList.append(outputMatrix)
                 
-                error = np.subtract(outputMatrix, outputTarget)
+                error = lossFunctions.mse_prime(outputTarget, outputMatrix)
                 
                 for i in range(len(self.layerList)):
                     error = self.layerList[len(self.layerList) - 1 - i].backPropagation(outputList[len(outputList )- 2 - i], outputList[len(outputList) - 1 - i], error)
